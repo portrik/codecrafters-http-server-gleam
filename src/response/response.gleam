@@ -1,76 +1,207 @@
 pub type HTTPStatus {
-  Status(code: Int, reason: String)
+  Continue
+  SwitchingProtocols
+  Processing
+  EarlyHints
+
+  OK
+  Created
+  Accepted
+  NonAuthoritativeInformation
+  NoContent
+  ResetContent
+  PartialContent
+  MultiStatus
+
+  MultipleChoices
+  MovedPermanently
+  Found
+  SeeOther
+  NotModified
+  UseProxy
+  TemporaryRedirect
+  PermanentRedirect
+
+  BadRequest
+  Unauthorized
+  PaymentRequired
+  Forbidden
+  NotFound
+  MethodNotAllowed
+  NotAcceptable
+  ProxyAuthenticationRequired
+  RequestTimeout
+  Conflict
+  Gone
+  LengthRequired
+  PreconditionFailed
+  PayloadTooLarge
+  URITooLong
+  UnsupportedMediaType
+  RangeNotSatisfiable
+  ExpectationFailed
+  ImATeapot
+  EnhanceYourCalm
+  MisdirectedRequest
+  UnprocessableEntity
+  Locked
+  FailedDependency
+  TooEarly
+  UpgradeRequired
+  PreconditionRequired
+  TooManyRequests
+  RequestHeaderFieldsTooLarge
+  UnavailableForLegalReasons
+
+  InternalServerError
+  NotImplemented
+  BadGateway
+  ServiceUnavailable
+  GatewayTimeout
+  HTTPVersionNotSupported
+  VariantAlsoNegotiates
+  InsufficientStorage
+  LoopDetected
+  NotExtended
+  NetworkAuthenticationRequired
 }
 
-pub fn create_status(code: Int) -> HTTPStatus {
-  case code {
-    100 -> Status(100, "Continue")
-    101 -> Status(101, "Switching Protocols")
-    102 -> Status(102, "Processing")
-    103 -> Status(103, "Early Hints")
+pub fn get_status_code(status: HTTPStatus) -> Int {
+  case status {
+    Continue -> 100
+    SwitchingProtocols -> 101
+    Processing -> 102
+    EarlyHints -> 103
 
-    200 -> Status(200, "OK")
-    201 -> Status(201, "Created")
-    202 -> Status(202, "Accepted")
-    203 -> Status(203, "Non-Authoritative Information")
-    204 -> Status(204, "No Content")
-    205 -> Status(205, "Reset Content")
-    206 -> Status(206, "Partial Content")
-    207 -> Status(207, "Multi-Status")
+    OK -> 200
+    Created -> 201
+    Accepted -> 202
+    NonAuthoritativeInformation -> 203
+    NoContent -> 204
+    ResetContent -> 205
+    PartialContent -> 206
+    MultiStatus -> 207
 
-    300 -> Status(300, "Multiple Choices")
-    301 -> Status(301, "Moved Permanently")
-    302 -> Status(302, "Found")
-    303 -> Status(303, "See Other")
-    304 -> Status(304, "Not Modified")
-    305 -> Status(305, "Use Proxy")
-    307 -> Status(307, "Temporary Redirect")
-    308 -> Status(308, "Permanent Redirect")
+    MultipleChoices -> 300
+    MovedPermanently -> 301
+    Found -> 302
+    SeeOther -> 303
+    NotModified -> 304
+    UseProxy -> 305
+    TemporaryRedirect -> 307
+    PermanentRedirect -> 308
 
-    400 -> Status(400, "Bad Request")
-    401 -> Status(401, "Unauthorized")
-    402 -> Status(402, "Payment Required")
-    403 -> Status(403, "Forbidden")
-    404 -> Status(404, "Not Found")
-    405 -> Status(405, "Method Not Allowed")
-    406 -> Status(406, "Not Acceptable")
-    407 -> Status(407, "Proxy Authentication Required")
-    408 -> Status(408, "Request Timeout")
-    409 -> Status(409, "Conflict")
-    410 -> Status(410, "Gone")
-    411 -> Status(411, "Length Required")
-    412 -> Status(412, "Precondition Failed")
-    413 -> Status(413, "Payload Too Large")
-    414 -> Status(414, "URI Too Long")
-    415 -> Status(415, "Unsupported Media Type")
-    416 -> Status(416, "Range Not Satisfiable")
-    417 -> Status(417, "Expectation Failed")
-    418 -> Status(418, "I'm a Teapot")
-    420 -> Status(420, "Enhance Your Calm")
-    421 -> Status(421, "Misdirected Request")
-    422 -> Status(422, "Unprocessable Entity")
-    423 -> Status(423, "Locked")
-    424 -> Status(424, "Failed Dependency")
-    425 -> Status(425, "Too Early")
-    426 -> Status(426, "Upgrade Required")
-    428 -> Status(428, "Precondition Required")
-    429 -> Status(429, "Too Many Requests")
-    431 -> Status(431, "Request Header Fields Too Large")
-    451 -> Status(451, "Unavailable For Legal Reasons")
+    BadRequest -> 400
+    Unauthorized -> 401
+    PaymentRequired -> 402
+    Forbidden -> 403
+    NotFound -> 404
+    MethodNotAllowed -> 405
+    NotAcceptable -> 406
+    ProxyAuthenticationRequired -> 407
+    RequestTimeout -> 408
+    Conflict -> 409
+    Gone -> 410
+    LengthRequired -> 411
+    PreconditionFailed -> 412
+    PayloadTooLarge -> 413
+    URITooLong -> 414
+    UnsupportedMediaType -> 415
+    RangeNotSatisfiable -> 416
+    ExpectationFailed -> 417
+    ImATeapot -> 418
+    EnhanceYourCalm -> 420
+    MisdirectedRequest -> 421
+    UnprocessableEntity -> 422
+    Locked -> 423
+    FailedDependency -> 424
+    TooEarly -> 425
+    UpgradeRequired -> 426
+    PreconditionRequired -> 428
+    TooManyRequests -> 429
+    RequestHeaderFieldsTooLarge -> 431
+    UnavailableForLegalReasons -> 451
 
-    500 -> Status(500, "Internal Server Error")
-    501 -> Status(501, "Not Implemented")
-    502 -> Status(502, "Bad Gateway")
-    503 -> Status(503, "Service Unavailable")
-    504 -> Status(504, "Gateway Timeout")
-    505 -> Status(505, "HTTP Version Not Supported")
-    506 -> Status(506, "Variant Also Negotiates")
-    507 -> Status(507, "Insufficient Storage")
-    508 -> Status(508, "Loop Detected")
-    510 -> Status(510, "Not Extended")
-    511 -> Status(511, "Network Authentication Required")
+    InternalServerError -> 500
+    NotImplemented -> 501
+    BadGateway -> 502
+    ServiceUnavailable -> 503
+    GatewayTimeout -> 504
+    HTTPVersionNotSupported -> 505
+    VariantAlsoNegotiates -> 506
+    InsufficientStorage -> 507
+    LoopDetected -> 508
+    NotExtended -> 510
+    NetworkAuthenticationRequired -> 511
+  }
+}
 
-    _ -> Status(500, "Internal Server Error - Unknown Status Code")
-    // Fallback to en error state
+pub fn get_status_reason(status: HTTPStatus) -> String {
+  case status {
+    Continue -> "Continue"
+    SwitchingProtocols -> "Switching Protocols"
+    Processing -> "Processing"
+    EarlyHints -> "Early Hints"
+
+    OK -> "OK"
+    Created -> "Created"
+    Accepted -> "Accepted"
+    NonAuthoritativeInformation -> "Non-Authoritative Information"
+    NoContent -> "No Content"
+    ResetContent -> "Reset Content"
+    PartialContent -> "Partial Content"
+    MultiStatus -> "Multi-Status"
+
+    MultipleChoices -> "Multiple Choices"
+    MovedPermanently -> "Moved Permanently"
+    Found -> "Found"
+    SeeOther -> "See Other"
+    NotModified -> "Not Modified"
+    UseProxy -> "Use Proxy"
+    TemporaryRedirect -> "Temporary Redirect"
+    PermanentRedirect -> "Permanent Redirect"
+
+    BadRequest -> "Bad Request"
+    Unauthorized -> "Unauthorized"
+    PaymentRequired -> "Payment Required"
+    Forbidden -> "Forbidden"
+    NotFound -> "Not Found"
+    MethodNotAllowed -> "Method Not Allowed"
+    NotAcceptable -> "Not Acceptable"
+    ProxyAuthenticationRequired -> "Proxy Authentication Required"
+    RequestTimeout -> "Request Timeout"
+    Conflict -> "Conflict"
+    Gone -> "Gone"
+    LengthRequired -> "Length Required"
+    PreconditionFailed -> "Precondition Failed"
+    PayloadTooLarge -> "Payload Too Large"
+    URITooLong -> "URI Too Long"
+    UnsupportedMediaType -> "Unsupported Media Type"
+    RangeNotSatisfiable -> "Range Not Satisfiable"
+    ExpectationFailed -> "Expectation Failed"
+    ImATeapot -> "I'm a Teapot"
+    EnhanceYourCalm -> "Enhance Your Calm"
+    MisdirectedRequest -> "Misdirected Request"
+    UnprocessableEntity -> "Unprocessable Entity"
+    Locked -> "Locked"
+    FailedDependency -> "Failed Dependency"
+    TooEarly -> "Too Early"
+    UpgradeRequired -> "Upgrade Required"
+    PreconditionRequired -> "Precondition Required"
+    TooManyRequests -> "Too Many Requests"
+    RequestHeaderFieldsTooLarge -> "Request Header Fields Too Large"
+    UnavailableForLegalReasons -> "Unavailable For Legal Reasons"
+
+    InternalServerError -> "Internal Server Error"
+    NotImplemented -> "Not Implemented"
+    BadGateway -> "Bad Gateway"
+    ServiceUnavailable -> "Service Unavailable"
+    GatewayTimeout -> "Gateway Timeout"
+    HTTPVersionNotSupported -> "HTTP Version Not Supported"
+    VariantAlsoNegotiates -> "Variant Also Negotiates"
+    InsufficientStorage -> "Insufficient Storage"
+    LoopDetected -> "Loop Detected"
+    NotExtended -> "Not Extended"
+    NetworkAuthenticationRequired -> "Network Authentication Required"
   }
 }
