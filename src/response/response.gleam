@@ -1,3 +1,5 @@
+import gleam/option.{type Option}
+
 pub type HTTPStatus {
   Continue
   SwitchingProtocols
@@ -134,6 +136,14 @@ pub fn get_status_code(status: HTTPStatus) -> Int {
     NotExtended -> 510
     NetworkAuthenticationRequired -> 511
   }
+}
+
+pub type HTTPResponse {
+  HTTPResponse(
+    status: HTTPStatus,
+    headers: List(#(String, String)),
+    body: Option(String),
+  )
 }
 
 pub fn get_status_reason(status: HTTPStatus) -> String {

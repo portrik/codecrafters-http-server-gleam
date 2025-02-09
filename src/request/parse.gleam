@@ -2,6 +2,7 @@ import gleam/list
 import gleam/option
 import gleam/result
 import gleam/string
+
 import request/request.{type HTTPRequest, type HTTPRequestMethod}
 
 pub type RequestParsingError {
@@ -133,7 +134,7 @@ pub fn parse_request(
     body -> option.Some(body)
   }
 
-  Ok(request.Request(
+  Ok(request.new(
     method: method,
     headers: headers,
     path: path,

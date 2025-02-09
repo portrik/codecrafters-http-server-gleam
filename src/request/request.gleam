@@ -18,12 +18,28 @@ pub type UnknownHTTPRequestMethod {
 }
 
 pub type HTTPRequest {
-  Request(
+  HTTPRequest(
     method: HTTPRequestMethod,
     headers: List(#(String, String)),
     path: String,
     body: Option(String),
     http_version: String,
+  )
+}
+
+pub fn new(
+  method method: HTTPRequestMethod,
+  headers headers: List(#(String, String)),
+  path path: String,
+  body body: Option(String),
+  http_version http_version: String,
+) -> HTTPRequest {
+  HTTPRequest(
+    method: method,
+    headers: headers,
+    path: path,
+    body: body,
+    http_version: http_version,
   )
 }
 

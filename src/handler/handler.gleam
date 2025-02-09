@@ -1,5 +1,6 @@
 import gleam/bit_array
 import gleam/bytes_tree
+import gleam/erlang/process.{type Subject}
 import gleam/io
 import gleam/list
 import gleam/option.{type Option}
@@ -11,9 +12,10 @@ import glisten.{type Connection, type Message}
 
 import request/request.{type HTTPRequest}
 import response/format
-import response/response
+import response/response.{type HTTPResponse}
+import router/actor as router
 
-fn read_response(message: Message(user_message)) -> Option(HTTPRequest) {
+fn read_request(message: Message(user_message)) -> Option(HTTPRequest) {
   case message {
     glisten.Packet(content) ->
       content
@@ -27,7 +29,23 @@ fn read_response(message: Message(user_message)) -> Option(HTTPRequest) {
   }
 }
 
+fn get_response(
+  router_actor: Subject(router.Message),
+  request: HTTPRequest,
+) -> HTTPResponse {
+  let handler =
+    router_actor
+    |> router.get_route(request.path, request.method)
+
+  case handler {
+    option.None ->
+      response.HTTPResponse(response.NotFound, list.new(), option.None)
+    option.Some(handler) -> handler(request)
+  }
+}
+
 pub fn connection_handler(
+  router_actor: Subject(router.Message),
   message: Message(user_message),
   state: Nil,
   connection: Connection(user_message),
@@ -35,13 +53,11 @@ pub fn connection_handler(
   io.println("Received message.")
   io.debug(message)
 
-  let request = read_response(message)
+  let request = read_request(message)
   let response = case request {
-    option.Some(request.Request(request.GET, _, "/", _, _)) ->
-      format.format_response(response.OK, list.new(), option.None)
-    option.Some(request.Request(request.GET, _, _, _, _)) ->
-      format.format_response(response.NotFound, list.new(), option.None)
-    _ -> format.format_response(response.BadRequest, list.new(), option.None)
+    option.None ->
+      response.HTTPResponse(response.BadRequest, list.new(), option.None)
+    option.Some(request) -> get_response(router_actor, request)
   }
 
   io.println("Sending response.")
@@ -49,7 +65,9 @@ pub fn connection_handler(
 
   let assert Ok(_) =
     connection
-    |> glisten.send(bytes_tree.from_string(response))
+    |> glisten.send(
+      response |> format.format_response |> bytes_tree.from_string,
+    )
 
   io.println("Finished connection.")
   actor.continue(state)
