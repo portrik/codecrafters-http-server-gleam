@@ -1,6 +1,6 @@
+import gleam/erlang/process
 import gleam/io
 import gleam/list
-import gleam/erlang/process
 import gleam/option.{None}
 
 import glisten
@@ -9,8 +9,10 @@ import handler/handler
 import request/request.{type HTTPRequestMethod}
 import router/actor
 import router/router.{type RouteHandler}
+
 import routes/echo_route
 import routes/index
+import routes/user_agent
 
 type Route {
   Route(path: String, method: HTTPRequestMethod, handler: RouteHandler)
@@ -22,6 +24,11 @@ const routes: List(Route) = [
     path: "/echo/{string}",
     method: request.GET,
     handler: echo_route.echo_route,
+  ),
+  Route(
+    path: "/user-agent",
+    method: request.GET,
+    handler: user_agent.user_agent,
   ),
 ]
 
