@@ -23,6 +23,7 @@ pub type HTTPRequest {
     headers: List(#(String, String)),
     path: String,
     body: Option(String),
+    http_version: String,
   )
 }
 

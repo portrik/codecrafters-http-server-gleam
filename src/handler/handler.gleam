@@ -37,9 +37,9 @@ pub fn connection_handler(
 
   let request = read_response(message)
   let response = case request {
-    option.Some(request.Request(request.GET, _, "/", _)) ->
+    option.Some(request.Request(request.GET, _, "/", _, _)) ->
       format.format_response(response.OK, list.new(), option.None)
-    option.Some(request.Request(request.GET, _, _, _)) ->
+    option.Some(request.Request(request.GET, _, _, _, _)) ->
       format.format_response(response.NotFound, list.new(), option.None)
     _ -> format.format_response(response.BadRequest, list.new(), option.None)
   }
