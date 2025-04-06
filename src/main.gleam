@@ -11,6 +11,7 @@ import router/actor
 import router/router.{type RouteHandler}
 
 import routes/echo_route
+import routes/filename
 import routes/index
 import routes/user_agent
 
@@ -29,6 +30,11 @@ const routes: List(Route) = [
     path: "/user-agent",
     method: request.GET,
     handler: user_agent.user_agent,
+  ),
+  Route(
+    path: "/files/{filename}",
+    method: request.GET,
+    handler: filename.filename,
   ),
 ]
 
