@@ -7,6 +7,7 @@ import gleam/list
 import gleam/option
 import gleam/result
 import gleam/string
+import simplifile
 
 import request/request.{type HTTPRequest}
 import response/response.{type HTTPResponse}
@@ -32,15 +33,8 @@ type WriteError {
 }
 
 fn read_file(file_name: String) -> Result(String, ReadError) {
-  use directory <- result.try(
-    case configuration.load_command_line().file_directory {
-      option.None -> Error(ReadFileError(DirectoryArgumentMissing))
-      option.Some(directory) -> Ok(directory)
-    },
-  )
-
   use stream <- result.try(
-    directory
+    configuration.load_command_line().file_directory
     |> filepath.join(file_name)
     |> file_stream.open_read
     |> result.replace_error(FileMissing),
@@ -107,22 +101,9 @@ pub fn filename(request: HTTPRequest) -> HTTPResponse {
 }
 
 fn write_file(file_name: String, body: String) -> Result(Nil, WriteError) {
-  use directory <- result.try(
-    case configuration.load_command_line().file_directory {
-      option.None -> Error(WriteFileError(DirectoryArgumentMissing))
-      option.Some(directory) -> Ok(directory)
-    },
-  )
-
-  use stream <- result.try(
-    directory
-    |> filepath.join(file_name)
-    |> file_stream.open_write
-    |> result.replace_error(CouldNotOpenFile),
-  )
-
-  stream
-  |> file_stream.write_bytes(body |> bit_array.from_string)
+  configuration.load_command_line().file_directory
+  |> filepath.join(file_name)
+  |> simplifile.write(body)
   |> result.replace_error(CouldNotWriteData)
 }
 
