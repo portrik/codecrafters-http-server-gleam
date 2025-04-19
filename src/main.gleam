@@ -36,6 +36,11 @@ const routes: List(Route) = [
     method: request.GET,
     handler: filename.filename,
   ),
+  Route(
+    path: "/files/{filename}",
+    method: request.POST,
+    handler: filename.create_file,
+  ),
 ]
 
 pub fn main() {
