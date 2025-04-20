@@ -61,13 +61,13 @@ pub fn connection_handler(
   }
 
   io.println("Sending response.")
+
+  let response = response |> format.format_response(request)
   io.debug(response)
 
   let assert Ok(_) =
     connection
-    |> glisten.send(
-      response |> format.format_response |> bytes_tree.from_string,
-    )
+    |> glisten.send(response |> bytes_tree.from_string)
 
   io.println("Finished connection.")
   actor.continue(state)

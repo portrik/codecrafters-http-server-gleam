@@ -1,4 +1,3 @@
-import gleam/int
 import gleam/list
 import gleam/option
 import gleam/string
@@ -15,13 +14,7 @@ pub fn user_agent(request: HTTPRequest) -> HTTPResponse {
     Ok(#(_key, value)) ->
       response.HTTPResponse(
         status: response.OK,
-        headers: [
-          #("Content-Type", "text/plain"),
-          #(
-            "Content-Length",
-            value |> string.trim |> string.length |> int.to_string,
-          ),
-        ],
+        headers: [#("Content-Type", "text/plain")],
         body: option.Some(value |> string.trim),
       )
     _ ->

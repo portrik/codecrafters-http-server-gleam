@@ -2,7 +2,6 @@ import configuration
 import file_streams/file_stream
 import filepath
 import gleam/bit_array
-import gleam/int
 import gleam/list
 import gleam/option
 import gleam/result
@@ -67,10 +66,7 @@ pub fn filename(request: HTTPRequest) -> HTTPResponse {
     Ok(file_content) ->
       response.HTTPResponse(
         status: response.OK,
-        headers: [
-          #("Content-Type", "application/octet-stream"),
-          #("Content-Length", file_content |> string.length |> int.to_string),
-        ],
+        headers: [#("Content-Type", "application/octet-stream")],
         body: option.Some(file_content),
       )
 

@@ -1,4 +1,3 @@
-import gleam/int
 import gleam/list
 import gleam/option
 import gleam/string
@@ -16,10 +15,7 @@ pub fn echo_route(request: HTTPRequest) -> HTTPResponse {
     ["echo", to_echo] ->
       response.HTTPResponse(
         status: response.OK,
-        headers: [
-          #("Content-Type", "text/plain"),
-          #("Content-Length", to_echo |> string.length |> int.to_string),
-        ],
+        headers: [#("Content-Type", "text/plain")],
         body: option.Some(to_echo),
       )
     _ ->

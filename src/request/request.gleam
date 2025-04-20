@@ -1,4 +1,6 @@
+import gleam/list
 import gleam/option.{type Option}
+import gleam/string
 
 pub type HTTPRequestMethod {
   GET
@@ -24,6 +26,7 @@ pub type HTTPRequest {
     path: String,
     body: Option(String),
     http_version: String,
+    accepts_encoding: Option(String),
   )
 }
 
@@ -40,6 +43,10 @@ pub fn new(
     path: path,
     body: body,
     http_version: http_version,
+    accepts_encoding: headers
+      |> list.find(fn(header) { header.0 == "Accept-Encoding" })
+      |> option.from_result
+      |> option.map(fn(header) { header.1 |> string.lowercase |> string.trim }),
   )
 }
 
