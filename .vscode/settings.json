@@ -1,6 +1,7 @@
 {
     "conventionalCommits.scopes": [
         "Base",
-        "HTTP Compression"
+        "HTTP Compression",
+        "Persistent Connections"
     ]
 }
