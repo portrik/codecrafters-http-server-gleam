@@ -15,6 +15,11 @@ pub type HTTPRequestMethod {
   PATCH
 }
 
+pub type CompressionScheme {
+  NoCompression
+  GZIP
+}
+
 pub type UnknownHTTPRequestMethod {
   UnknownHTTPRequestMethod
 }
@@ -26,8 +31,19 @@ pub type HTTPRequest {
     path: String,
     body: Option(String),
     http_version: String,
-    accepts_encoding: Option(String),
+    accepts_encodings: List(CompressionScheme),
   )
+}
+
+fn compression_scheme_from_string(value: String) -> CompressionScheme {
+  case value {
+    "" -> NoCompression
+    compression ->
+      case string.contains(compression, "gzip") {
+        True -> GZIP
+        False -> NoCompression
+      }
+  }
 }
 
 pub fn new(
@@ -43,10 +59,21 @@ pub fn new(
     path: path,
     body: body,
     http_version: http_version,
-    accepts_encoding: headers
+    accepts_encodings: headers
       |> list.find(fn(header) { header.0 == "Accept-Encoding" })
       |> option.from_result
-      |> option.map(fn(header) { header.1 |> string.lowercase |> string.trim }),
+      |> option.map(fn(header) {
+        header.1
+        |> string.split(",")
+        |> list.map(fn(value) {
+          value
+          |> string.lowercase
+          |> string.trim
+          |> compression_scheme_from_string
+        })
+        |> list.unique
+      })
+      |> option.unwrap([NoCompression]),
   )
 }
 

@@ -5,7 +5,7 @@ import gleam/option.{type Option}
 import gleam/string
 import gzlib
 
-import request/request.{type HTTPRequest}
+import request/request.{type CompressionScheme, type HTTPRequest}
 import response/response.{type HTTPResponse}
 
 pub type FormattedBody {
@@ -43,24 +43,35 @@ fn normalize_headers(
   }
 }
 
+fn get_best_compression(
+  compression_options: List(CompressionScheme),
+) -> CompressionScheme {
+  case compression_options {
+    [] -> request.NoCompression
+    [compression] -> compression
+    options ->
+      case list.contains(options, request.GZIP) {
+        True -> request.GZIP
+        False -> request.NoCompression
+      }
+  }
+}
+
 fn compress_body(
   request: Option(HTTPRequest),
   body: Option(String),
 ) -> FormattedBody {
-  let compression = case request {
-    option.None -> option.None
-    option.Some(request) -> request.accepts_encoding
+  let compression_options = case request {
+    option.None -> list.new()
+    option.Some(request) -> request.accepts_encodings
   }
 
   let content = body |> option.unwrap("")
 
-  case compression {
-    option.Some(compression) ->
-      case string.contains(compression, "gzip") {
-        True -> content |> bit_array.from_string |> gzlib.compress |> GZIPBody
-        False -> content |> PlainBody
-      }
-    _ -> content |> PlainBody
+  case get_best_compression(compression_options) {
+    request.GZIP ->
+      content |> bit_array.from_string |> gzlib.compress |> GZIPBody
+    request.NoCompression -> content |> PlainBody
   }
 }
 
