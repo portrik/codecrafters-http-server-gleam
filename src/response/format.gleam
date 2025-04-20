@@ -16,15 +16,21 @@ pub type FormattedBody {
   GZIPBody(BitArray)
 }
 
+pub type FormatOptions {
+  FormatOptions(compression: List(CompressionScheme), close: Bool)
+}
+
 const section_marker: String = "\r\n"
 
 fn normalize_headers(
   headers: List(#(String, String)),
   body: FormattedBody,
+  close: Bool,
 ) -> List(#(String, String)) {
   let body_size =
     case body {
       PlainBody(body) -> body |> string.length
+
       GZIPBody(body) -> body |> bit_array.byte_size
     }
     |> int.to_string
@@ -33,9 +39,16 @@ fn normalize_headers(
     headers
     |> list.append([#("Content-Length", body_size)])
 
-  case body {
+  let with_compression = case body {
     PlainBody(_) -> with_size
+
     GZIPBody(_) -> with_size |> list.append([#("Content-Encoding", "gzip")])
+  }
+
+  case close {
+    False -> with_compression
+
+    True -> with_compression |> list.append([#("Connection", "close")])
   }
 }
 
@@ -67,7 +80,7 @@ fn compress_body(
 
 pub fn format_response(
   response: HTTPResponse,
-  compression_options: List(CompressionScheme),
+  options: FormatOptions,
 ) -> BytesTree {
   let status_line =
     [
@@ -77,11 +90,11 @@ pub fn format_response(
     ]
     |> string.join(" ")
 
-  let body = compress_body(compression_options, response.body)
+  let body = compress_body(options.compression, response.body)
 
   let headers_line =
     response.headers
-    |> normalize_headers(body)
+    |> normalize_headers(body, options.close)
     |> list.map(fn(header) { string.join([header.0, header.1], ": ") })
     |> string.join(section_marker)
     |> string.append(section_marker)

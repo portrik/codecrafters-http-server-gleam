@@ -70,7 +70,10 @@ fn parse_header(
     |> result.map(fn(rest) { rest |> string.join(":") }),
   )
 
-  Ok(#(key, value))
+  Ok(#(
+    key |> string.lowercase |> string.trim,
+    value |> string.lowercase |> string.trim,
+  ))
 }
 
 fn parse_headers_recursive(

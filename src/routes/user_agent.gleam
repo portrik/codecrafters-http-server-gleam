@@ -8,7 +8,7 @@ import response/response.{type HTTPResponse}
 pub fn user_agent(request: HTTPRequest) -> HTTPResponse {
   let user_agent =
     request.headers
-    |> list.find(fn(header) { header.0 == "User-Agent" })
+    |> list.find(fn(header) { header.0 == "user-agent" })
 
   case user_agent {
     Ok(#(_key, value)) ->

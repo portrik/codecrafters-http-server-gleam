@@ -60,19 +60,12 @@ pub fn new(
     body: body,
     http_version: http_version,
     accepts_encodings: headers
-      |> list.find(fn(header) {
-        header.0 |> string.lowercase == "accept-encoding"
-      })
+      |> list.find(fn(header) { header.0 == "accept-encoding" })
       |> option.from_result
       |> option.map(fn(header) {
         header.1
         |> string.split(",")
-        |> list.map(fn(value) {
-          value
-          |> string.lowercase
-          |> string.trim
-          |> compression_scheme_from_string
-        })
+        |> list.map(compression_scheme_from_string)
         |> list.unique
       })
       |> option.unwrap([NoCompression]),

@@ -36,6 +36,7 @@ fn get_response(
   case handler {
     option.None ->
       response.HTTPResponse(response.NotFound, list.new(), option.None)
+
     option.Some(handler) -> handler(request)
   }
 }
@@ -52,28 +53,65 @@ pub fn connection_handler(
   let request = read_request(message)
   let response = case request {
     Ok(request) -> get_response(router_actor, request)
+
     Error(_) ->
       response.HTTPResponse(response.BadRequest, list.new(), option.None)
   }
 
   let compression_options = case request {
     Ok(request) -> request.accepts_encodings
+
     Error(_) -> [request.NoCompression]
+  }
+
+  let close_connection = case request {
+    Ok(request) -> {
+      let connection_header =
+        request.headers
+        |> list.find(fn(header) {
+          header.0 == "connection" && header.1 == "close"
+        })
+
+      io.debug(request.headers)
+
+      case connection_header {
+        Ok(_) -> True
+        Error(_) -> False
+      }
+    }
+    Error(_) -> True
   }
 
   io.println("Sending response.")
 
-  let response = response |> format.format_response(compression_options)
+  let response =
+    response
+    |> format.format_response(format.FormatOptions(
+      compression: compression_options,
+      close: close_connection,
+    ))
   io.debug(response)
 
   case glisten.send(connection, response) {
     Ok(_) -> io.println("Response sent successfully")
+
     Error(error) -> {
       io.debug(error)
       io.print_error("Failed to send response.")
     }
   }
 
-  io.println("Finished connection.")
-  actor.continue(state)
+  io.println("Finished exchange.")
+
+  case close_connection {
+    False -> {
+      io.println("Keeping the connection open")
+      actor.continue(state)
+    }
+
+    True -> {
+      io.println("Closing the connection.")
+      actor.Stop(process.Normal)
+    }
+  }
 }
