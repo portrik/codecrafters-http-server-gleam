@@ -1,5 +1,4 @@
 import gleam/bit_array
-import gleam/bytes_tree
 import gleam/erlang/process.{type Subject}
 import gleam/io
 import gleam/list
@@ -67,7 +66,7 @@ pub fn connection_handler(
 
   let assert Ok(_) =
     connection
-    |> glisten.send(response |> bytes_tree.from_string)
+    |> glisten.send(response)
 
   io.println("Finished connection.")
   actor.continue(state)

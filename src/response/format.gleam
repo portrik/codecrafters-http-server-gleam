@@ -1,12 +1,15 @@
 import gleam/bit_array
+import gleam/bytes_tree.{type BytesTree}
 import gleam/int
 import gleam/list
 import gleam/option.{type Option}
 import gleam/string
-import gzlib
 
 import request/request.{type CompressionScheme, type HTTPRequest}
 import response/response.{type HTTPResponse}
+
+@external(erlang, "zlib", "gzip")
+fn gzip(data: BitArray) -> BitArray
 
 pub type FormattedBody {
   PlainBody(String)
@@ -69,8 +72,7 @@ fn compress_body(
   let content = body |> option.unwrap("")
 
   case get_best_compression(compression_options) {
-    request.GZIP ->
-      content |> bit_array.from_string |> gzlib.compress |> GZIPBody
+    request.GZIP -> content |> bit_array.from_string |> gzip |> GZIPBody
     request.NoCompression -> content |> PlainBody
   }
 }
@@ -78,7 +80,7 @@ fn compress_body(
 pub fn format_response(
   response: HTTPResponse,
   request: Option(HTTPRequest),
-) -> String {
+) -> BytesTree {
   let status_line =
     [
       "HTTP/1.1",
@@ -96,10 +98,15 @@ pub fn format_response(
     |> string.join(section_marker)
     |> string.append(section_marker)
 
-  let body = case body {
-    PlainBody(body) -> body
-    GZIPBody(body) -> body |> bit_array.base64_encode(True)
+  status_line
+  |> bytes_tree.from_string
+  |> bytes_tree.append_string(section_marker)
+  |> bytes_tree.append_string(headers_line)
+  |> bytes_tree.append_string(section_marker)
+  |> fn(tree) {
+    case body {
+      PlainBody(body) -> bytes_tree.append_string(tree, body)
+      GZIPBody(body) -> bytes_tree.append(tree, body)
+    }
   }
-
-  [status_line, headers_line, body] |> string.join(section_marker)
 }
