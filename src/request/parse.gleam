@@ -83,19 +83,17 @@ fn parse_headers_recursive(
 
   case current {
     "" -> Ok(headers)
-    header ->
-      header
-      |> parse_header
-      |> result.map(fn(header) {
-        source
-        |> list.rest
-        |> result.replace_error(UnreadableHeaders)
-        |> result.map(fn(source) {
-          parse_headers_recursive(source, headers |> list.append([header]))
-        })
-        |> result.flatten
-      })
-      |> result.flatten
+    header -> {
+      use parsed_header <- result.try(header |> parse_header)
+      use remaining_sources <- result.try(
+        source |> list.rest |> result.replace_error(UnreadableHeaders),
+      )
+
+      parse_headers_recursive(
+        remaining_sources,
+        headers |> list.append([parsed_header]),
+      )
+    }
   }
 }
 

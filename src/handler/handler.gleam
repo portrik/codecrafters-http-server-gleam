@@ -2,29 +2,26 @@ import gleam/bit_array
 import gleam/erlang/process.{type Subject}
 import gleam/io
 import gleam/list
-import gleam/option.{type Option}
+import gleam/option
 import gleam/otp/actor.{type Next}
 import gleam/result
-import request/parse
 
 import glisten.{type Connection, type Message}
 
+import request/parse
 import request/request.{type HTTPRequest}
 import response/format
 import response/response.{type HTTPResponse}
 import router/actor as router
 
-fn read_request(message: Message(user_message)) -> Option(HTTPRequest) {
+fn read_request(message: Message(user_message)) -> Result(HTTPRequest, Nil) {
   case message {
-    glisten.Packet(content) ->
-      content
-      |> bit_array.to_string
-      |> result.map(fn(content) {
-        content |> parse.parse_request |> option.from_result
-      })
-      |> option.from_result
-      |> option.flatten
-    _ -> option.None
+    glisten.Packet(content) -> {
+      use string_content <- result.try(content |> bit_array.to_string)
+
+      string_content |> parse.parse_request |> result.replace_error(Nil)
+    }
+    _ -> Error(Nil)
   }
 }
 
@@ -54,19 +51,28 @@ pub fn connection_handler(
 
   let request = read_request(message)
   let response = case request {
-    option.None ->
+    Ok(request) -> get_response(router_actor, request)
+    Error(_) ->
       response.HTTPResponse(response.BadRequest, list.new(), option.None)
-    option.Some(request) -> get_response(router_actor, request)
+  }
+
+  let compression_options = case request {
+    Ok(request) -> request.accepts_encodings
+    Error(_) -> [request.NoCompression]
   }
 
   io.println("Sending response.")
 
-  let response = response |> format.format_response(request)
+  let response = response |> format.format_response(compression_options)
   io.debug(response)
 
-  let assert Ok(_) =
-    connection
-    |> glisten.send(response)
+  case glisten.send(connection, response) {
+    Ok(_) -> io.println("Response sent successfully")
+    Error(error) -> {
+      io.debug(error)
+      io.print_error("Failed to send response.")
+    }
+  }
 
   io.println("Finished connection.")
   actor.continue(state)

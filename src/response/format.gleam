@@ -5,7 +5,7 @@ import gleam/list
 import gleam/option.{type Option}
 import gleam/string
 
-import request/request.{type CompressionScheme, type HTTPRequest}
+import request/request.{type CompressionScheme}
 import response/response.{type HTTPResponse}
 
 @external(erlang, "zlib", "gzip")
@@ -22,23 +22,16 @@ fn normalize_headers(
   headers: List(#(String, String)),
   body: FormattedBody,
 ) -> List(#(String, String)) {
-  let size_header =
-    headers |> list.find(fn(header) { header.0 == "Content-Length" })
-
-  let with_size = case size_header {
-    Ok(_) -> headers
-    Error(_) -> {
-      let body_size =
-        case body {
-          PlainBody(body) -> body |> string.length
-          GZIPBody(body) -> body |> bit_array.byte_size
-        }
-        |> int.to_string
-
-      headers
-      |> list.append([#("Content-Length", body_size)])
+  let body_size =
+    case body {
+      PlainBody(body) -> body |> string.length
+      GZIPBody(body) -> body |> bit_array.byte_size
     }
-  }
+    |> int.to_string
+
+  let with_size =
+    headers
+    |> list.append([#("Content-Length", body_size)])
 
   case body {
     PlainBody(_) -> with_size
@@ -61,14 +54,9 @@ fn get_best_compression(
 }
 
 fn compress_body(
-  request: Option(HTTPRequest),
+  compression_options: List(CompressionScheme),
   body: Option(String),
 ) -> FormattedBody {
-  let compression_options = case request {
-    option.None -> list.new()
-    option.Some(request) -> request.accepts_encodings
-  }
-
   let content = body |> option.unwrap("")
 
   case get_best_compression(compression_options) {
@@ -79,7 +67,7 @@ fn compress_body(
 
 pub fn format_response(
   response: HTTPResponse,
-  request: Option(HTTPRequest),
+  compression_options: List(CompressionScheme),
 ) -> BytesTree {
   let status_line =
     [
@@ -89,7 +77,7 @@ pub fn format_response(
     ]
     |> string.join(" ")
 
-  let body = compress_body(request, response.body)
+  let body = compress_body(compression_options, response.body)
 
   let headers_line =
     response.headers

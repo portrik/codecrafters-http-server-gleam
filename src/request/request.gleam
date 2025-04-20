@@ -60,7 +60,9 @@ pub fn new(
     body: body,
     http_version: http_version,
     accepts_encodings: headers
-      |> list.find(fn(header) { header.0 == "Accept-Encoding" })
+      |> list.find(fn(header) {
+        header.0 |> string.lowercase == "accept-encoding"
+      })
       |> option.from_result
       |> option.map(fn(header) {
         header.1

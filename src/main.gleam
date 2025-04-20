@@ -1,3 +1,4 @@
+import configuration
 import gleam/erlang/process
 import gleam/io
 import gleam/list
@@ -45,6 +46,8 @@ const routes: List(Route) = [
 
 pub fn main() {
   io.println("Starting server")
+
+  configuration.load_command_line()
 
   let assert Ok(router_actor) = actor.new()
 
